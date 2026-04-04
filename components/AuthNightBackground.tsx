@@ -1,19 +1,11 @@
 'use client';
 
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
 
-interface Star {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  duration: number;
-  delay: number;
-  isFalling: boolean;
-}
+// --- AUTH NIGHT BACKGROUND COMPONENT ---
 
-export function AuthNightBackground({ starCount = 60 }: { starCount?: number }) {
+export function AuthNightBackground({ starCount = 80 }) {
   const [isClient, setIsClient] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -25,40 +17,43 @@ export function AuthNightBackground({ starCount = 60 }: { starCount?: number }) 
   }, []);
 
   const stars = useMemo(() => {
-    const arr: Star[] = [];
+    const arr = [];
     for (let i = 0; i < starCount; i++) {
+      const isFalling = Math.random() < 0.15; // 15% chance to be a falling star
       arr.push({
         id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
+        // Falling stars start higher and further left to smoothly sweep across the whole screen
+        x: isFalling ? (Math.random() * 120) - 20 : Math.random() * 100,
+        y: isFalling ? (Math.random() * -30) - 10 : Math.random() * 100,
         size: Math.random() * 3 + 1,
-        duration: Math.random() * 3 + 2,
-        delay: Math.random() * 6,
-        isFalling: Math.random() < 0.12,
+        duration: isFalling ? Math.random() * 1.5 + 2 : Math.random() * 3 + 2,
+        delay: Math.random() * 8,
+        isFalling,
       });
     }
     return arr;
   }, [starCount]);
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-black via-zinc-900 to-slate-900 overflow-hidden -z-10 pointer-events-none">
+    // Deep dark night background with a very subtle midnight-teal tint to complement the pink
+    <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-[#020b14] via-[#051320] to-[#010408] overflow-hidden -z-10 pointer-events-none">
+      
+      {/* --- PINK STARS --- */}
       <div className="absolute inset-0 w-full h-full">
         {isClient &&
           stars.map((star) => {
-            const style = {
-              width: star.size,
-              height: star.size,
-              left: `${star.x}%`,
-              top: `${star.y}%`,
-              boxShadow: '0 0 8px rgba(255, 182, 193, 0.9)',
-            } as React.CSSProperties;
-
             if (reducedMotion) {
               return (
                 <div
                   key={`star-${star.id}`}
-                  className="absolute rounded-full bg-pink-300"
-                  style={style}
+                  className="absolute rounded-full bg-pink-400"
+                  style={{
+                    width: star.size,
+                    height: star.size,
+                    left: `${star.x}%`,
+                    top: star.isFalling ? `${Math.random() * 100}%` : `${star.y}%`,
+                    boxShadow: '0 0 8px rgba(255, 105, 180, 0.8)',
+                  }}
                   aria-hidden
                 />
               );
@@ -68,33 +63,50 @@ export function AuthNightBackground({ starCount = 60 }: { starCount?: number }) 
               return (
                 <motion.div
                   key={`star-${star.id}`}
-                  className="absolute rounded-full bg-pink-300"
-                  style={style}
+                  className="absolute"
+                  style={{
+                    left: `${star.x}%`,
+                    top: `${star.y}%`,
+                    width: `${Math.max(1, star.size - 1)}px`, 
+                    height: `${star.size * 25}px`,
+                    // Bright pink gradient tail
+                    background: 'linear-gradient(to bottom, rgba(255,182,193,0) 0%, rgba(255,105,180,1) 100%)',
+                    boxShadow: '0 8px 16px rgba(255, 105, 180, 0.9)',
+                    borderRadius: '100px',
+                    rotate: '-45deg', 
+                  }}
                   animate={{
-                    opacity: [0.3, 1, 0],
-                    y: [0, -6, 420],
-                    scale: [1, 1.2, 1],
+                    x: ['0vh', '150vh'], 
+                    y: ['0vh', '150vh'], 
+                    opacity: [0, 1, 1, 0],
                   }}
                   transition={{
-                    duration: 6 + Math.random() * 4,
+                    duration: star.duration,
                     delay: star.delay,
                     repeat: Infinity,
                     ease: 'linear',
-                    repeatDelay: 6 + Math.random() * 6,
+                    repeatDelay: 5 + Math.random() * 8, 
                   }}
                   aria-hidden
                 />
               );
             }
 
+            // Twinkling pink stars
             return (
               <motion.div
                 key={`star-${star.id}`}
-                className="absolute rounded-full bg-pink-300"
-                style={style}
+                className="absolute rounded-full bg-pink-400"
+                style={{
+                  width: star.size,
+                  height: star.size,
+                  left: `${star.x}%`,
+                  top: `${star.y}%`,
+                  boxShadow: '0 0 12px rgba(255, 105, 180, 0.9)',
+                }}
                 animate={{
-                  opacity: [0.25, 1, 0.25],
-                  scale: [1, 1.5, 1],
+                  opacity: [0.2, 1, 0.2],
+                  scale: [0.8, 1.3, 0.8],
                 }}
                 transition={{
                   duration: star.duration,
@@ -107,6 +119,16 @@ export function AuthNightBackground({ starCount = 60 }: { starCount?: number }) 
             );
           })}
       </div>
+    </div>
+  );
+}
+
+// --- DEMO APP WRAPPER ---
+
+export default function App() {
+  return (
+    <div className="relative min-h-screen flex flex-col items-center justify-center font-sans">
+      <AuthNightBackground starCount={90} />
     </div>
   );
 }
