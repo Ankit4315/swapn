@@ -85,7 +85,7 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="w-full px-4 py-2 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition"
+                className="w-full px-4 py-2 bg-transparent border border-pink-300 border-opacity-30 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:border-pink-400 transition"
                 required
               />
             </div>
@@ -100,7 +100,7 @@ export default function SignupPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="dreamkeeper"
-                className="w-full px-4 py-2 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition"
+                className="w-full px-4 py-2 bg-transparent border border-pink-300 border-opacity-30 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:border-pink-400 transition"
                 required
               />
             </div>
@@ -115,7 +115,7 @@ export default function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••"
-                className="w-full px-4 py-2 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition"
+                className="w-full px-4 py-2 bg-transparent border border-pink-300 border-opacity-30 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:border-pink-400 transition"
                 required
               />
             </div>
@@ -130,7 +130,7 @@ export default function SignupPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••"
-                className="w-full px-4 py-2 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition"
+                className="w-full px-4 py-2 bg-transparent border border-pink-300 border-opacity-30 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:border-pink-400 transition"
                 required
               />
             </div>
