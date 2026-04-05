@@ -7,8 +7,8 @@ import * as THREE from 'three';
 // --- THREE.JS 3D GRASS COMPONENT ---
 // This uses hardware-accelerated WebGL Instancing and custom Shaders to render 
 // tens of thousands of grass blades at buttery smooth 60fps!
-const ThreeGrassField = ({ isForeground }) => {
-  const mountRef = useRef(null);
+const ThreeGrassField = ({ isForeground }: { isForeground?: boolean }) => {
+  const mountRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const currentMount = mountRef.current;
@@ -43,7 +43,7 @@ const ThreeGrassField = ({ isForeground }) => {
     });
 
     // Inject custom organic wind animation into standard Three.js shader
-    material.onBeforeCompile = (shader) => {
+    material.onBeforeCompile = (shader: any) => {
       shader.uniforms.time = { value: 0 };
       material.userData.shader = shader;
       
@@ -122,7 +122,7 @@ const ThreeGrassField = ({ isForeground }) => {
     scene.add(mesh);
 
     // 6. Animation Loop
-    let animationFrameId;
+    let animationFrameId: number | null = null;
     const clock = new THREE.Clock();
 
     const animate = () => {
@@ -145,7 +145,7 @@ const ThreeGrassField = ({ isForeground }) => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
       currentMount.removeChild(renderer.domElement);
       geometry.dispose();
       material.dispose();
@@ -177,7 +177,7 @@ export function AnimatedBackground() {
     setIsClient(true);
   }, []);
 
-  const seededRandom = (n) => {
+  const seededRandom = (n: number): number => {
     const x = Math.sin(n) * 10000;
     return x - Math.floor(x);
   };
@@ -215,7 +215,7 @@ export function AnimatedBackground() {
     });
   }, []);
 
-  const Cloud = ({ top, delay, duration, scale, opacity }) => (
+  const Cloud = ({ top, delay, duration, scale, opacity }: { top: number; delay: number; duration: number; scale: number; opacity: number }) => (
     <motion.div
       className="absolute flex items-center justify-center pointer-events-none"
       style={{ top: `${top}%`, transform: `scale(${scale})`, opacity }}
