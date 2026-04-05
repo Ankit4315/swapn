@@ -56,9 +56,9 @@ export function AuthNightBackground({ starCount = 80 }) {
       { id: 1, x: 20, y: 65, size: 200, duration: 22, delay: 2 },
       // One in the middle
       { id: 2, x: 45, y: 40, size: 280, duration: 20, delay: 1 },
-      // Two independent ones on the right
-      { id: 3, x: 70, y: 20, size: 180, duration: 17, delay: 3 },
-      { id: 4, x: 80, y: 60, size: 220, duration: 19, delay: 4 },
+      // Two independent ones on the right (One up, one down!)
+      { id: 3, x: 72, y: 15, size: 180, duration: 17, delay: 3 }, // Positioned UP
+      { id: 4, x: 80, y: 75, size: 220, duration: 19, delay: 4 }, // Positioned DOWN
     ];
   }, []);
 
