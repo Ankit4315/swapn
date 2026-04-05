@@ -1,24 +1,175 @@
 'use client';
 
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useMemo, useState, useEffect } from 'react';
+import * as THREE from 'three';
 
-interface Star {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  duration: number;
-  delay: number;
-}
+// --- THREE.JS 3D GRASS COMPONENT ---
+// This uses hardware-accelerated WebGL Instancing and custom Shaders to render 
+// tens of thousands of grass blades at buttery smooth 60fps!
+const ThreeGrassField = ({ isForeground }) => {
+  const mountRef = useRef(null);
 
-interface Flower {
-  id: number;
-  x: number;
-  y: number;
-  delay: number;
-}
+  useEffect(() => {
+    const currentMount = mountRef.current;
+    if (!currentMount) return;
 
+    // 1. Setup Scene & Camera
+    const scene = new THREE.Scene();
+    const width = currentMount.clientWidth;
+    const height = currentMount.clientHeight;
+    
+    // Using identical camera settings for both layers to match perspective
+    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 100);
+    camera.position.set(0, 1.2, 5);
+    camera.lookAt(0, 0.5, 0);
+
+    // 2. Setup Renderer (Transparent background)
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+    currentMount.appendChild(renderer.domElement);
+
+    // 3. Grass Blade Geometry (Tapered Plane)
+    const geometry = new THREE.PlaneGeometry(0.06, 1.5, 1, 4);
+    geometry.translate(0, 0.75, 0); // Anchor rotation to the bottom of the blade
+
+    // 4. Custom Wind Shader Material
+    const material = new THREE.MeshBasicMaterial({ 
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: isForeground ? 1.0 : 0.85
+    });
+
+    // Inject custom organic wind animation into standard Three.js shader
+    material.onBeforeCompile = (shader) => {
+      shader.uniforms.time = { value: 0 };
+      material.userData.shader = shader;
+      
+      shader.vertexShader = `uniform float time;\n` + shader.vertexShader;
+      shader.vertexShader = shader.vertexShader.replace(
+        `#include <begin_vertex>`,
+        `
+        vec3 transformed = vec3( position );
+        
+        // Taper the grass blade to a point at the top
+        transformed.x *= (1.0 - uv.y * 0.85);
+        
+        // Calculate world position to create rolling wind waves
+        vec4 worldPos = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+        
+        // Organic wind algorithm (Reduced wave by another 30%)
+        float windWave = sin(time * 2.5 + worldPos.x * 0.6 + worldPos.z * 0.8) * 0.196;
+        float windGust = sin(time * 1.2 + worldPos.x * 0.2) * 0.098;
+        
+        // Bend more aggressively at the top (pow curve)
+        float bend = pow(uv.y, 2.0);
+        
+        transformed.x += (windWave + windGust) * bend;
+        transformed.z += (windWave * 0.5) * bend;
+        `
+      );
+    };
+
+    // 5. Instancing (Drawing thousands of blades in one single draw call)
+    const count = isForeground ? 10000 : 25000;
+    const mesh = new THREE.InstancedMesh(geometry, material, count);
+    
+    const dummy = new THREE.Object3D();
+    const color = new THREE.Color();
+
+    for (let i = 0; i < count; i++) {
+      // Spread grass out wide
+      const x = (Math.random() - 0.5) * 35;
+      
+      // Determine depth placement based on which layer this is
+      let z;
+      if (isForeground) {
+        z = Math.random() * 4; // Near camera [0 to 4]
+      } else {
+        z = (Math.random() * 14) - 15; // Far from camera [-15 to -1]
+      }
+
+      // Position & Natural random rotation
+      dummy.position.set(x, 0, z);
+      dummy.rotation.y = Math.random() * Math.PI;
+      
+      // Scale variations (taller in front, smaller in back)
+      const depthScale = (z + 15) / 19; // normalized 0 to 1
+      const baseScaleY = (Math.random() * 0.5 + 0.5) * (depthScale * 0.8 + 0.5);
+      const scaleY = baseScaleY * 0.4; // Reduced height by another 50% (0.5 multiplier)
+      const scaleX = Math.random() * 0.5 + 0.8;
+      dummy.scale.set(scaleX, scaleY, 1);
+      
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+
+      // Color based on depth
+      if (isForeground) {
+        // Foreground: Very dark silhouettes (pitch black to dark magenta)
+        const t = z / 4; // 0 to 1
+        color.setHSL(0.85, 0.6, 0.15 - t * 0.12);
+      } else {
+        // Background: Glowing pinks blending to deep purple
+        const t = (z + 15) / 14; // 0 to 1
+        // T=0 is far horizon (bright pink glow), T=1 is closer (darker purple)
+        color.setHSL(0.85 + Math.random()*0.05, 0.8, 0.65 - t * 0.4);
+      }
+      mesh.setColorAt(i, color);
+    }
+
+    scene.add(mesh);
+
+    // 6. Animation Loop
+    let animationFrameId;
+    const clock = new THREE.Clock();
+
+    const animate = () => {
+      if (material.userData.shader) {
+        material.userData.shader.uniforms.time.value = clock.getElapsedTime();
+      }
+      renderer.render(scene, camera);
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    animate();
+
+    // 7. Handle Resizing
+    const handleResize = () => {
+      if (!currentMount) return;
+      camera.aspect = currentMount.clientWidth / currentMount.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+      currentMount.removeChild(renderer.domElement);
+      geometry.dispose();
+      material.dispose();
+      renderer.dispose();
+    };
+  }, [isForeground]);
+
+  return (
+    <div 
+      ref={mountRef} 
+      className="absolute inset-0 w-full h-full pointer-events-none" 
+      style={{ 
+        zIndex: isForeground ? 40 : 10,
+        // Apply a CSS drop-shadow to the canvas container to create a soft, magical organic glow around the grass blades!
+        filter: isForeground 
+          ? 'drop-shadow(0px -2px 5px rgba(255, 20, 147, 0.25))' 
+          : 'drop-shadow(0px -5px 12px rgba(255, 105, 180, 0.65))'
+      }}
+    />
+  );
+};
+
+
+// --- MAIN SCENE ---
 export function AnimatedBackground() {
   const [isClient, setIsClient] = useState(false);
 
@@ -26,135 +177,147 @@ export function AnimatedBackground() {
     setIsClient(true);
   }, []);
 
+  const seededRandom = (n) => {
+    const x = Math.sin(n) * 10000;
+    return x - Math.floor(x);
+  };
+
+  // Generate Stars
   const stars = useMemo(() => {
-    const starsArray: Star[] = [];
-    for (let i = 0; i < 50; i++) {
-      starsArray.push({
+    return Array.from({ length: 80 }).map((_, i) => {
+      return {
         id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 3 + 1,
-        duration: Math.random() * 3 + 2,
-        delay: Math.random() * 2,
-      });
-    }
-    return starsArray;
+        x: Number((seededRandom(i * 5 + 1) * 100).toFixed(2)),
+        y: Number((seededRandom(i * 5 + 2) * 100).toFixed(2)),
+        size: Number((seededRandom(i * 5 + 3) * 3 + 1).toFixed(2)),
+        duration: Number((seededRandom(i * 5 + 4) * 3 + 2).toFixed(2)),
+        delay: Number((seededRandom(i * 5 + 5) * 2).toFixed(2))
+      };
+    });
   }, []);
 
-  const flowers = useMemo(() => {
-    const flowersArray: Flower[] = [];
-    for (let i = 0; i < 8; i++) {
-      flowersArray.push({
-        id: i,
-        x: (i + 1) * (100 / 9),
-        y: 75,
-        delay: i * 0.2,
-      });
-    }
-    return flowersArray;
+  // Generate Fireflies
+  const fireflies = useMemo(() => {
+    return Array.from({ length: 120 }).map((_, i) => { 
+      const z = Math.pow(seededRandom(100 + i * 6 + 1), 1.2); 
+      const horizonBottom = (1 - z) * 30 - 5; 
+      
+      return { 
+        id: i, 
+        left: Number((seededRandom(100 + i * 6 + 2) * 100).toFixed(2)), 
+        bottom: Number((horizonBottom + seededRandom(100 + i * 6 + 3) * 25).toFixed(2)), 
+        size: Number((z * 4 + 1.5).toFixed(2)), 
+        duration: Number((seededRandom(100 + i * 6 + 4) * 3 + 2).toFixed(2)), 
+        delay: Number((seededRandom(100 + i * 6 + 5) * 4).toFixed(2)), 
+        xOffset: Number((seededRandom(100 + i * 6 + 6) * 30 - 15).toFixed(2)), 
+        zIndex: z < 0.5 ? 25 : 35 // Weave between tree (z:20) and foreground (z:40)
+      };
+    });
   }, []);
+
+  const Cloud = ({ top, delay, duration, scale, opacity }) => (
+    <motion.div
+      className="absolute flex items-center justify-center pointer-events-none"
+      style={{ top: `${top}%`, transform: `scale(${scale})`, opacity }}
+      initial={{ x: '-30vw' }}
+      animate={{ x: '120vw' }}
+      transition={{ duration, repeat: Infinity, ease: 'linear', delay }}
+    >
+      <img 
+        src="pinkcloud.png" 
+        alt="Floating pink cloud"
+        className="w-24 md:w-40 object-contain mix-blend-screen"
+        style={{ filter: 'brightness(1.1) contrast(1.1)' }}
+      />
+    </motion.div>
+  );
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-pink-900 via-pink-800 to-pink-700 overflow-hidden -z-10 pointer-events-none">
-      {/* Stars container */}
-      <div className="absolute inset-0 w-full h-full">
-        {isClient &&
-          stars.map((star) => (
-            <motion.div
-              key={`star-${star.id}`}
-              className="absolute rounded-full bg-pink-200"
-              style={{
-                width: star.size,
-                height: star.size,
-                left: `${star.x}%`,
-                top: `${star.y}%`,
-                boxShadow: '0 0 10px rgba(255, 182, 193, 0.8)',
-              }}
-              animate={{
-                opacity: [0.3, 1, 0.3],
-                scale: [1, 1.5, 1],
-              }}
-              transition={{
-                duration: star.duration,
-                delay: star.delay,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-          ))}
-      </div>
-
-      {/* Flowers container */}
-      <div className="absolute bottom-0 w-full h-32 flex items-end justify-around px-8">
-        {flowers.map((flower) => (
+    <div className="relative w-full h-screen bg-gradient-to-b from-[#0a0010] via-[#2d0a22] to-[#4a1030] overflow-hidden">
+      
+      {/* Sky & Stars */}
+      <div className="absolute inset-0 w-full h-full pointer-events-none z-0">
+        {isClient && stars.map((star) => (
           <motion.div
-            key={`flower-${flower.id}`}
-            className="flex flex-col items-center"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{
-              delay: flower.delay,
-              duration: 0.8,
+            key={`star-${star.id}`}
+            className="absolute rounded-full bg-pink-100"
+            style={{
+              width: star.size, height: star.size, left: `${star.x}%`, top: `${star.y}%`,
+              boxShadow: '0 0 8px rgba(255, 182, 193, 0.9)',
             }}
-          >
-            {/* Flower stem */}
-            <div className="w-1 h-16 bg-green-400 rounded-full" />
-
-            {/* Flower bloom - using circles to create a simple flower */}
-            <div className="relative w-12 h-12 -mt-2">
-              {/* Center */}
-              <div className="absolute inset-2 bg-yellow-300 rounded-full shadow-lg" />
-
-              {/* Petals */}
-              {[0, 60, 120, 180, 240, 300].map((rotation) => (
-                <motion.div
-                  key={`${flower.id}-petal-${rotation}`}
-                  className="absolute w-5 h-5 bg-pink-400 rounded-full"
-                  style={{
-                    top: 6,
-                    left: 6,
-                    transformOrigin: '50% 12px',
-                    transform: `rotate(${rotation}deg) translateY(-12px)`,
-                  }}
-                  animate={{
-                    scale: [1, 1.1, 1],
-                  }}
-                  transition={{
-                    duration: 3,
-                    delay: flower.delay + rotation * 0.05,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
-                />
-              ))}
-            </div>
-          </motion.div>
+            animate={{ opacity: [0.1, 1, 0.1], scale: [1, 1.5, 1] }}
+            transition={{ duration: star.duration, delay: star.delay, repeat: Infinity, ease: 'easeInOut' }}
+          />
         ))}
       </div>
 
-      {/* Character silhouette placeholder */}
-      <motion.div
-        className="absolute bottom-32 right-12 text-white opacity-60"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 0.6 }}
-        transition={{ duration: 1 }}
+      {/* Pink Moon */}
+      <motion.div 
+        className="absolute top-0 md:top-2 right-4 md:right-10 w-16 h-16 md:w-28 md:h-28 z-0"
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 2, ease: 'easeOut' }}
       >
-        <svg width="120" height="200" viewBox="0 0 120 200">
-          {/* Head */}
-          <circle cx="60" cy="40" r="20" fill="white" opacity="0.5" />
-
-          {/* Body */}
-          <rect x="50" y="60" width="20" height="40" fill="white" opacity="0.5" />
-
-          {/* Arms */}
-          <line x1="50" y1="70" x2="30" y2="85" stroke="white" strokeWidth="3" opacity="0.5" />
-          <line x1="70" y1="70" x2="90" y2="85" stroke="white" strokeWidth="3" opacity="0.5" />
-
-          {/* Legs */}
-          <line x1="52" y1="100" x2="45" y2="140" stroke="white" strokeWidth="3" opacity="0.5" />
-          <line x1="68" y1="100" x2="75" y2="140" stroke="white" strokeWidth="3" opacity="0.5" />
-        </svg>
+        <img src="pinkmoon1.png" alt="Pink moon" className="w-full h-full object-contain mix-blend-screen opacity-95 drop-shadow-[0_0_40px_rgba(255,105,180,0.4)]" />
       </motion.div>
+
+      {/* Pink Clouds */}
+      {isClient && (
+        <div className="z-0">
+          <Cloud top={10} delay={0} duration={60} scale={0.7} opacity={0.8} />
+          <Cloud top={25} delay={-20} duration={80} scale={1.2} opacity={0.9} />
+          <Cloud top={5} delay={-40} duration={50} scale={0.5} opacity={0.6} />
+          <Cloud top={40} delay={-10} duration={70} scale={0.8} opacity={0.7} />
+        </div>
+      )}
+
+      {/* --- UNIFIED 3D GROUND FIELD CONTAINER --- */}
+      <div className="absolute bottom-0 w-full h-[55vh] md:h-[65vh] pointer-events-none">
+        
+        {/* Deep Ground Base Fade */}
+        <div className="absolute bottom-0 w-full h-full bg-gradient-to-t from-[#020001] via-[#1a0512]/95 to-transparent z-0" />
+        
+        {/* Pink Glow Bloom behind the horizon field */}
+        <div className="absolute bottom-[5%] left-0 w-full h-[40%] bg-gradient-to-t from-[#ff1493]/30 via-[#ffb6c1]/10 to-transparent blur-3xl z-0" />
+
+        {/* --- Three.js Layer 1: Background Grass (Behind Tree) --- */}
+        {isClient && <ThreeGrassField isForeground={false} />}
+
+        {/* The Tree (Sandwiched between grass layers at z-index 20) */}
+        <div className="absolute bottom-[10%] md:bottom-[15%] left-[-15%] md:left-[-5%] w-full max-w-lg h-[75%] md:h-[80%] flex flex-col items-center z-20">
+          <motion.div 
+            className="relative w-full h-full flex items-end justify-center"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 2, ease: 'easeOut' }}
+          >
+            <img src="/pinktree.png" alt="Majestic pink tree" className="w-full h-full object-contain drop-shadow-[0_0_40px_rgba(255,105,180,0.6)]" />
+          </motion.div>
+          <div className="absolute bottom-6 w-[50%] h-12 bg-[#ff69b4] blur-2xl opacity-50 rounded-[100%] z-[-1]" />
+        </div>
+
+        {/* Floating HTML Fireflies (Weaving through z-index layers) */}
+        {isClient && fireflies.map((bug) => (
+          <motion.div
+            key={`bug-${bug.id}`}
+            className="absolute rounded-full bg-[#fff0f5] mix-blend-screen"
+            style={{
+              width: bug.size, height: bug.size, left: `${bug.left}%`, bottom: `${bug.bottom}%`,
+              zIndex: bug.zIndex, 
+              boxShadow: '0 0 8px 2px rgba(255, 182, 193, 0.8), 0 0 15px 4px rgba(255, 20, 147, 0.6)',
+            }}
+            animate={{ y: [0, -40, 0], x: [0, bug.xOffset, 0], opacity: [0, 1, 0], scale: [1, 1.3, 1] }}
+            transition={{ duration: bug.duration, delay: bug.delay, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        ))}
+
+        {/* --- Three.js Layer 2: Foreground Grass (In Front of Tree) --- */}
+        {isClient && <ThreeGrassField isForeground={true} />}
+
+      </div>
+
     </div>
   );
 }
+
+export default AnimatedBackground;
