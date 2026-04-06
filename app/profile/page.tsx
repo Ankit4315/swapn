@@ -166,7 +166,7 @@ export default function ProfilePage() {
                   type="text"
                   value={editData.username}
                   onChange={(e) => setEditData({ ...editData, username: e.target.value })}
-                  className="w-full px-4 py-2 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-white focus:outline-none focus:bg-opacity-20 focus:border-pink-400"
+                  className="w-full px-4 py-2 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-pink-600 focus:outline-none focus:bg-opacity-20 focus:border-pink-400"
                 />
               </div>
 
@@ -177,7 +177,7 @@ export default function ProfilePage() {
                   onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
                   placeholder="Tell us about yourself..."
                   rows={5}
-                  className="w-full px-4 py-2 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 resize-none"
+                  className="w-full px-4 py-2 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-pink-600 placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 resize-none"
                 />
                 <p className="text-pink-300 text-sm mt-1">
                   {editData.bio.length}/500 characters

@@ -81,7 +81,7 @@ export default function NewDreamPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Give your dream a title..."
-              className="w-full px-4 py-3 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition text-lg"
+              className="w-full px-4 py-3 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-pink-600 placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition text-lg"
               required
             />
           </div>
@@ -96,7 +96,7 @@ export default function NewDreamPage() {
               onChange={(e) => setContent(e.target.value)}
               placeholder="Write about your dream in detail..."
               rows={10}
-              className="w-full px-4 py-3 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition text-lg resize-none"
+              className="w-full px-4 py-3 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-pink-600 placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition text-lg resize-none"
               required
             />
           </div>
@@ -110,7 +110,7 @@ export default function NewDreamPage() {
                 id="mood"
                 value={mood}
                 onChange={(e) => setMood(e.target.value)}
-                className="w-full px-4 py-3 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-white focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition"
+                className="w-full px-4 py-3 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-pink-600 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition"
               >
                 {moods.map((m) => (
                   <option key={m} value={m} className="bg-pink-900">
@@ -130,7 +130,7 @@ export default function NewDreamPage() {
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
                 placeholder="e.g., flying, family, adventure"
-                className="w-full px-4 py-3 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition"
+                className="w-full px-4 py-3 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-pink-600 placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition"
               />
             </div>
           </div>

@@ -78,14 +78,14 @@ export default function DreamsPage() {
             placeholder="Search your dreams..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-3 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition"
+            className="w-full px-4 py-3 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-pink-600 placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition"
           />
 
           <div className="flex flex-wrap gap-2">
             <select
               value={moodFilter}
               onChange={(e) => setMoodFilter(e.target.value)}
-              className="px-4 py-2 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-white focus:outline-none focus:bg-opacity-20 transition"
+              className="px-4 py-2 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-pink-600 focus:outline-none focus:bg-opacity-20 transition"
             >
               <option value="all" className="bg-pink-900">All Moods</option>
               {moods.map((mood) => (
