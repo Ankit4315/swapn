@@ -5,10 +5,13 @@ import { motion } from 'framer-motion';
 
 // --- MOCKS FOR NEXT.JS & NEXT-AUTH ---
 // These simulate your Next.js environment so the component can render in this preview
-const useSession = () => ({ data: { user: { username: 'StarGazer' } } });
-const useRouter = () => ({ push: (url) => console.log('Navigating to:', url) });
-const signOut = async () => console.log('Signing out...');
-const Link = ({ href, children, className }) => <a href={href} className={className}>{children}</a>;
+type MockSession = { data: { user?: { username: string } | null } };
+const useSession = (): MockSession => ({ data: { user: { username: 'StarGazer' } } });
+const useRouter = (): { push: (url: string) => void } => ({ push: (url: string) => console.log('Navigating to:', url) });
+const signOut = async (options?: { redirect?: boolean }): Promise<void> => { console.log('Signing out...'); };
+const Link: React.FC<{ href: string; className?: string; children?: React.ReactNode }> = ({ href, children, className }) => (
+  <a href={href} className={className}>{children}</a>
+);
 
 
 // --- ACTUAL APP NAV CODE ---
@@ -27,26 +30,11 @@ export function AppNav() {
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="relative z-50 sticky top-0 backdrop-blur-xl border-b border-pink-400/20 shadow-[0_4px_30px_rgba(255,20,147,0.15)] overflow-hidden"
+      // Changed backdrop-blur-[2px] to an arbitrary backdrop-blur-[1px] to reduce the effect further
+      className="relative z-50 sticky top-0 backdrop-blur-[1px] border-b border-pink-400/20 shadow-[0_4px_30px_rgba(255,20,147,0.1)]"
+      // Added a slight white/pink tint at 3% opacity to give it a real glass shine
+      style={{ backgroundColor: 'rgba(255, 182, 193, 0.03)' }}
     >
-      {/* Galaxy Background Effect Layer */}
-      <div 
-        className="absolute inset-0 pointer-events-none z-0"
-        style={{
-          backgroundImage: `
-            radial-gradient(1px 1px at 15% 30%, rgba(255, 255, 255, 0.8), transparent),
-            radial-gradient(1px 1px at 25% 70%, rgba(255, 182, 193, 0.8), transparent),
-            radial-gradient(2px 2px at 45% 20%, rgba(255, 255, 255, 0.9), transparent),
-            radial-gradient(1px 1px at 65% 60%, rgba(255, 182, 193, 0.8), transparent),
-            radial-gradient(1.5px 1.5px at 85% 40%, rgba(255, 255, 255, 0.8), transparent),
-            radial-gradient(circle at 20% 150%, rgba(255, 20, 147, 0.25), transparent 60%),
-            radial-gradient(circle at 80% -50%, rgba(138, 43, 226, 0.25), transparent 60%),
-            radial-gradient(circle at 50% 50%, rgba(75, 0, 130, 0.15), transparent 50%),
-            linear-gradient(to right, rgba(10, 0, 16, 0.6), rgba(45, 10, 34, 0.5), rgba(10, 0, 16, 0.6))
-          `
-        }}
-      />
-
       {/* Nav Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         <Link 
@@ -99,17 +87,17 @@ export function AppNav() {
 export default function AppPreview() {
   return (
     <div className="min-h-screen bg-[#0a0010] relative font-sans">
-      {/* Fake glowing background elements to demonstrate the glass transparency */}
+      {/* Fake glowing background elements to demonstrate the full transparency */}
       <div className="absolute top-32 left-20 w-96 h-96 bg-pink-600 rounded-full mix-blend-screen filter blur-[120px] opacity-30 pointer-events-none" />
       <div className="absolute top-20 right-32 w-80 h-80 bg-purple-700 rounded-full mix-blend-screen filter blur-[100px] opacity-40 pointer-events-none" />
       
       {/* The Nav Bar */}
       <AppNav />
       
-      {/* Dummy content to allow scrolling and testing the "sticky" blur effect */}
+      {/* Dummy content to allow scrolling and testing the "sticky" transparent effect */}
       <div className="max-w-4xl mx-auto mt-20 p-8 text-center text-pink-200/50">
-        <h1 className="text-3xl font-serif italic mb-4 text-pink-200">Scroll down to test the sticky glassmorphism!</h1>
-        <p className="mb-12">Notice how the background elements and the dark void blur beautifully beneath the navigation bar.</p>
+        <h1 className="text-3xl font-serif italic mb-4 text-pink-200">Scroll down to test the further reduced blur glassmorphism!</h1>
+        <p className="mb-12">Notice how reducing the blur to "1px" makes the nav bar look almost completely clear, maintaining only a hint of the frosted effect.</p>
         <div className="h-[1200px] w-full rounded-2xl border border-pink-500/10 bg-white/5 flex items-center justify-center">
            <span className="opacity-50">Empty Space for Scrolling</span>
         </div>
