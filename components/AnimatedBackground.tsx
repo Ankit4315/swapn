@@ -278,7 +278,7 @@ const getTreeWisdom = async (prompt: string, retryCount = 0): Promise<string> =>
 };
 
 // --- WHISPER UI COMPONENT ---
-const WishtreeInterface: React.FC = () => {
+export const WishtreeInterface: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [inputText, setInputText] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
@@ -451,10 +451,7 @@ export function AnimatedBackground() {
   );
 
   return (
-    <div className="relative w-full h-screen bg-gradient-to-b from-[#0a0010] via-[#2d0a22] to-[#4a1030] overflow-hidden">
-      
-      {/* LLM Feature Interface */}
-      {isClient && <WishtreeInterface />}
+    <div className="fixed inset-0 w-full h-screen -z-10 bg-gradient-to-b from-[#0a0010] via-[#2d0a22] to-[#4a1030] overflow-hidden">
 
       {/* Sky & Stars */}
       <div className="absolute inset-0 w-full h-full pointer-events-none z-0">
