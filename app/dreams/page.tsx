@@ -78,14 +78,14 @@ export default function DreamsPage() {
             placeholder="Search your dreams..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-3 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-pink-600 placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 transition"
+            className="w-full px-4 py-3 bg-white/5 backdrop-blur-xl border border-pink-300/30 rounded-lg text-white placeholder-pink-200 focus:outline-none focus:bg-white/10 focus:border-pink-400 transition shadow-lg"
           />
 
           <div className="flex flex-wrap gap-2">
             <select
               value={moodFilter}
               onChange={(e) => setMoodFilter(e.target.value)}
-              className="px-4 py-2 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-pink-600 focus:outline-none focus:bg-opacity-20 transition"
+              className="px-4 py-2 bg-white/5 backdrop-blur-xl border border-pink-300/30 rounded-lg text-white focus:outline-none focus:bg-white/10 transition shadow-lg"
             >
               <option value="all" className="bg-pink-900">All Moods</option>
               {moods.map((mood) => (
@@ -120,7 +120,7 @@ export default function DreamsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20 rounded-xl p-6 hover:bg-opacity-20 transition cursor-pointer group"
+              className="bg-white/5 backdrop-blur-2xl border border-white/20 rounded-xl p-6 hover:bg-white/10 transition cursor-pointer group shadow-xl"
             >
               <Link href={`/dreams/${dream._id}`}>
                 <h3 className="text-xl font-bold text-white mb-2 group-hover:text-pink-200 transition">

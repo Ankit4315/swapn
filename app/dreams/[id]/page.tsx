@@ -122,7 +122,7 @@ export default function DreamDetailPage() {
         ← Back
       </button>
 
-      <div className="bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20 rounded-xl p-8">
+      <div className="bg-white/5 backdrop-blur-2xl border border-white/20 rounded-xl p-8 shadow-xl">
         {!isEditing ? (
           <>
             <h1 className="text-4xl font-bold text-white mb-4">{dream.title}</h1>
