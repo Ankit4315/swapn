@@ -196,11 +196,18 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
 
     // 6. Animation Loop
     let animationFrameId: number | null = null;
-    const clock = new THREE.Clock();
+    // Prefer the newer THREE.Timer where available; fall back to Clock for compatibility
+    const TimerClass = (THREE as any).Timer || (THREE as any).Clock;
+    const clock = new TimerClass();
 
     const animate = () => {
       if (material.userData.shader) {
-        material.userData.shader.uniforms.time.value = clock.getElapsedTime();
+        const elapsed = typeof clock.getElapsedTime === 'function'
+          ? clock.getElapsedTime()
+          : typeof clock.getElapsed === 'function'
+            ? clock.getElapsed()
+            : (clock.elapsedTime ?? clock.elapsed ?? 0);
+        material.userData.shader.uniforms.time.value = elapsed;
       }
       renderer.render(scene, camera);
       animationFrameId = requestAnimationFrame(animate);
