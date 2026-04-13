@@ -19,7 +19,7 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
     const scene = new THREE.Scene();
     const width = currentMount.clientWidth;
     const height = currentMount.clientHeight;
-    
+
     // Using identical camera settings for both layers to match perspective
     const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 100);
     camera.position.set(0, 1.2, 5);
@@ -37,7 +37,7 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
     geometry.translate(0, 0.75, 0); // Anchor rotation to the bottom of the blade
 
     // 4. Custom Wind Shader Material
-    const material = new THREE.MeshBasicMaterial({ 
+    const material = new THREE.MeshBasicMaterial({
       side: THREE.DoubleSide,
       transparent: true,
       opacity: isForeground ? 1.0 : 0.85
@@ -47,7 +47,7 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
     material.onBeforeCompile = (shader) => {
       shader.uniforms.time = { value: 0 };
       material.userData.shader = shader;
-      
+
       shader.vertexShader = `uniform float time;\n` + shader.vertexShader;
       shader.vertexShader = shader.vertexShader.replace(
         `#include <begin_vertex>`,
@@ -60,9 +60,9 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
         // Calculate world position to create rolling wind waves
         vec4 worldPos = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
         
-        // Organic wind algorithm (Reduced wave by 50%)
-        float windWave = sin(time * 2.5 + worldPos.x * 0.6 + worldPos.z * 0.8) * 0.098;
-        float windGust = sin(time * 1.2 + worldPos.x * 0.2) * 0.049;
+        // Organic wind algorithm (Reduced wave by another 50%)
+        float windWave = sin(time * 2.5 + worldPos.x * 0.6 + worldPos.z * 0.8) * 0.04675;
+        float windGust = sin(time * 1.2 + worldPos.x * 0.2) * 0.04675;
         
         // Bend more aggressively at the top (pow curve)
         float bend = pow(uv.y, 2.0);
@@ -76,14 +76,14 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
     // 5. Instancing (Drawing thousands of blades in one single draw call)
     const count = isForeground ? 10000 : 8000;
     const mesh = new THREE.InstancedMesh(geometry, material, count);
-    
+
     const dummy = new THREE.Object3D();
     const color = new THREE.Color();
 
     // Base properties for clearings around both trees
-    const treeCenterX = -13.0; 
+    const treeCenterX = -13.0;
     const treeCenterZ = -4.0;
-    const clearingRadius = 7.0; 
+    const clearingRadius = 7.0;
 
     // Updated coordinates to push the right tree clearing further back
     const tree2CenterX = 15.0; // Pushed further right
@@ -93,7 +93,7 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
     for (let i = 0; i < count; i++) {
       // Spread grass out wide
       const x = (Math.random() - 0.5) * 35;
-      
+
       // Determine depth placement based on which layer this is
       let z;
       if (isForeground) {
@@ -105,16 +105,16 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
       // Position & Natural random rotation
       dummy.position.set(x, 0, z);
       dummy.rotation.y = Math.random() * Math.PI;
-      
+
       // Scale variations (taller in front, smaller in back)
       const depthScale = (z + 15) / 19; // normalized 0 to 1
       const baseScaleY = (Math.random() * 0.5 + 0.5) * (depthScale * 0.8 + 0.5);
-      
+
       // --- LOGIC 1: Circular clearing around the primary left tree base ---
       const distToTreeX = x - treeCenterX;
       const distToTreeZ = z - treeCenterZ;
-      const distToTree = Math.sqrt(distToTreeX*distToTreeX + distToTreeZ*distToTreeZ);
-      
+      const distToTree = Math.sqrt(distToTreeX * distToTreeX + distToTreeZ * distToTreeZ);
+
       let treeHeightFactor = 1.0;
       if (distToTree < clearingRadius) {
         const normalizedDist = distToTree / clearingRadius;
@@ -124,8 +124,8 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
       // --- LOGIC 1B: Circular clearing around the new right Cherry Blossom tree ---
       const distToTree2X = x - tree2CenterX;
       const distToTree2Z = z - tree2CenterZ;
-      const distToTree2 = Math.sqrt(distToTree2X*distToTree2X + distToTree2Z*distToTree2Z);
-      
+      const distToTree2 = Math.sqrt(distToTree2X * distToTree2X + distToTree2Z * distToTree2Z);
+
       let tree2HeightFactor = 1.0;
       if (distToTree2 < clearing2Radius) {
         const normalizedDist2 = distToTree2 / clearing2Radius;
@@ -135,14 +135,14 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
       // --- LOGIC 2: Organic winding path from center-front to the primary left tree ---
       // Calculate interpolation factor 't' from 0 (front z=4) to 1 (tree z=-4)
       const t = Math.max(0, Math.min(1, (4.0 - z) / 8.0));
-      
+
       // Winding path starting from center front (x=0) curving towards the tree (x=-13)
       const pathX = -13.0 * t + Math.sin(t * Math.PI) * -3.5;
       const distToPath = Math.abs(x - pathX);
-      
+
       // Wider path at the front (closer to camera) shrinking as it reaches the tree
-      const pathWidth = 1.5 + (1.0 - t) * 4.5; 
-      
+      const pathWidth = 1.5 + (1.0 - t) * 4.5;
+
       let pathHeightFactor = 1.0;
       // Only generate the path footprint in front of the tree depth
       if (z > -6.0 && distToPath < pathWidth) {
@@ -156,23 +156,23 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
 
       // --- LOGIC 3: Boost grass length on the left side (bottom-left and center-left) ---
       let regionalBoost = 1.0;
-      if (x < 2.0) { 
+      if (x < 2.0) {
         // Increase height from center-right (x=2.0) all the way to far left (x=-17.5)
         const leftFactor = Math.min(Math.max((2.0 - x) / 19.5, 0.0), 1.0);
         regionalBoost = 1.0 + leftFactor * 1.5; // Up to 150% taller on the far left
-        
+
         // Extra boost for the absolute bottom foreground
         if (isForeground) {
-           regionalBoost *= 1.4;
+          regionalBoost *= 1.4;
         }
       }
 
       // Apply the factors and foreground reductions
       const foregroundAdjustment = isForeground ? 0.7 : 1.0;
-      const scaleY = baseScaleY * 0.4 * finalHeightFactor * foregroundAdjustment * regionalBoost; 
+      const scaleY = baseScaleY * 0.4 * finalHeightFactor * foregroundAdjustment * regionalBoost;
       const scaleX = (Math.random() * 0.5 + 0.8) * (finalHeightFactor * 0.4 + 0.6);
       dummy.scale.set(scaleX, scaleY, 1);
-      
+
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
 
@@ -187,7 +187,7 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
         // Background: Glowing pinks blending to deep purple
         const depthT = (z + 15) / 14; // 0 to 1
         const opacityBias = finalHeightFactor < 0.9 ? finalHeightFactor + 0.3 : 1.0;
-        color.setHSL(0.85 + Math.random()*0.05, 0.8, (0.65 - depthT * 0.4) * Math.min(opacityBias, 1.0));
+        color.setHSL(0.85 + Math.random() * 0.05, 0.8, (0.65 - depthT * 0.4) * Math.min(opacityBias, 1.0));
       }
       mesh.setColorAt(i, color);
     }
@@ -196,17 +196,11 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
 
     // 6. Animation Loop
     let animationFrameId: number | null = null;
-    // Prefer the newer THREE.Timer where available; fall back to Clock for compatibility
-    const TimerClass = (THREE as any).Timer || (THREE as any).Clock;
-    const clock = new TimerClass();
+    const startTime = performance.now();
 
     const animate = () => {
       if (material.userData.shader) {
-        const elapsed = typeof clock.getElapsedTime === 'function'
-          ? clock.getElapsedTime()
-          : typeof clock.getElapsed === 'function'
-            ? clock.getElapsed()
-            : (clock.elapsedTime ?? clock.elapsed ?? 0);
+        const elapsed = (performance.now() - startTime) / 1000;
         material.userData.shader.uniforms.time.value = elapsed;
       }
       renderer.render(scene, camera);
@@ -234,14 +228,14 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
   }, [isForeground]);
 
   return (
-    <div 
-      ref={mountRef} 
-      className="absolute inset-0 w-full h-full pointer-events-none" 
-      style={{ 
+    <div
+      ref={mountRef}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{
         zIndex: isForeground ? 40 : 10,
         // Apply a CSS drop-shadow to the canvas container to create a soft, magical organic glow around the grass blades!
-        filter: isForeground 
-          ? 'drop-shadow(0px -2px 5px rgba(255, 20, 147, 0.25))' 
+        filter: isForeground
+          ? 'drop-shadow(0px -2px 5px rgba(255, 20, 147, 0.25))'
           : 'drop-shadow(0px -5px 12px rgba(255, 105, 180, 0.65))'
       }}
     />
@@ -294,11 +288,11 @@ export const WishtreeInterface: React.FC = () => {
 
   const handleWhisper = async () => {
     if (!inputText.trim()) return;
-    
+
     setIsGenerating(true);
     setTreeResponse(null);
     setError(null);
-    
+
     try {
       const wisdom = await getTreeWisdom(inputText);
       setTreeResponse(wisdom);
@@ -319,7 +313,7 @@ export const WishtreeInterface: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <span className="text-xl">✨</span> 
+          <span className="text-xl">✨</span>
           <span className="font-medium tracking-wide">Whisper to the Tree</span>
         </motion.button>
       ) : (
@@ -332,7 +326,7 @@ export const WishtreeInterface: React.FC = () => {
             <h2 className="text-pink-200 font-serif italic text-xl flex items-center gap-2">
               <span>✨</span> The Wishtree
             </h2>
-            <button 
+            <button
               onClick={() => setIsOpen(false)}
               className="text-pink-300/50 hover:text-pink-200 transition-colors"
             >
@@ -365,9 +359,9 @@ export const WishtreeInterface: React.FC = () => {
 
           <AnimatePresence>
             {error && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }} 
-                animate={{ opacity: 1, height: 'auto' }} 
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
                 className="mt-4 text-red-300/90 text-sm p-3 bg-red-900/20 rounded-lg border border-red-500/20"
               >
                 {error}
@@ -419,18 +413,18 @@ export function AnimatedBackground() {
 
   // Generate Fireflies
   const fireflies = useMemo(() => {
-    return Array.from({ length: 120 }).map((_, i) => { 
-      const z = Math.pow(seededRandom(100 + i * 6 + 1), 1.2); 
-      const horizonBottom = (1 - z) * 30 - 5; 
-      
-      return { 
-        id: i, 
-        left: Number((seededRandom(100 + i * 6 + 2) * 100).toFixed(2)), 
-        bottom: Number((horizonBottom + seededRandom(100 + i * 6 + 3) * 25).toFixed(2)), 
-        size: Number((z * 4 + 1.5).toFixed(2)), 
-        duration: Number((seededRandom(100 + i * 6 + 4) * 3 + 2).toFixed(2)), 
-        delay: Number((seededRandom(100 + i * 6 + 5) * 4).toFixed(2)), 
-        xOffset: Number((seededRandom(100 + i * 6 + 6) * 30 - 15).toFixed(2)), 
+    return Array.from({ length: 120 }).map((_, i) => {
+      const z = Math.pow(seededRandom(100 + i * 6 + 1), 1.2);
+      const horizonBottom = (1 - z) * 30 - 5;
+
+      return {
+        id: i,
+        left: Number((seededRandom(100 + i * 6 + 2) * 100).toFixed(2)),
+        bottom: Number((horizonBottom + seededRandom(100 + i * 6 + 3) * 25).toFixed(2)),
+        size: Number((z * 4 + 1.5).toFixed(2)),
+        duration: Number((seededRandom(100 + i * 6 + 4) * 3 + 2).toFixed(2)),
+        delay: Number((seededRandom(100 + i * 6 + 5) * 4).toFixed(2)),
+        xOffset: Number((seededRandom(100 + i * 6 + 6) * 30 - 15).toFixed(2)),
         zIndex: z < 0.5 ? 25 : 35 // Weave between tree (z:20) and foreground (z:40)
       };
     });
@@ -447,8 +441,8 @@ export function AnimatedBackground() {
       animate={{ x: '120vw', scale: scale }}
       transition={{ duration, repeat: Infinity, ease: 'linear', delay }}
     >
-      <img 
-        src="/pinkcloud.png" 
+      <img
+        src="/pinkcloud.png"
         alt="Floating pink cloud"
         // Gave them a standard width so scaling makes a huge visual difference
         className="w-32 md:w-56 object-contain mix-blend-screen"
@@ -477,7 +471,7 @@ export function AnimatedBackground() {
       </div>
 
       {/* Pink Moon */}
-      <motion.div 
+      <motion.div
         className="absolute top-0 md:top-2 right-4 md:right-10 w-16 h-16 md:w-28 md:h-28 z-0"
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -492,10 +486,10 @@ export function AnimatedBackground() {
           {/* Top clouds: reduced size by 20% */}
           <Cloud top={10} delay={0} duration={60} scale={1.2} opacity={0.8} />
           <Cloud top={25} delay={-20} duration={80} scale={0.96} opacity={0.9} />
-          
+
           {/* Mid cloud: reduced size by 20% */}
           <Cloud top={5} delay={-40} duration={50} scale={0.72} opacity={0.6} />
-          
+
           {/* Lowest cloud: tiny, far in the distance near the grass */}
           <Cloud top={40} delay={-10} duration={70} scale={0.3} opacity={0.7} />
         </div>
@@ -503,26 +497,26 @@ export function AnimatedBackground() {
 
       {/* --- UNIFIED 3D GROUND FIELD CONTAINER --- */}
       <div className="absolute bottom-0 w-full h-[55vh] md:h-[65vh] pointer-events-none">
-        
+
         {/* Deep Ground Base Fade */}
         <div className="absolute bottom-0 w-full h-full bg-gradient-to-t from-[#020001] via-[#1a0512]/95 to-transparent z-0" />
-        
+
         {/* Pink Glow Bloom behind the horizon field */}
         <div className="absolute bottom-[5%] left-0 w-full h-[40%] bg-gradient-to-t from-[#ff1493]/30 via-[#ffb6c1]/10 to-transparent blur-3xl z-0" />
 
         {/* --- The New Right Tree (Cherry Blossom) - Pushed way back, higher up the screen, and scaled down! --- */}
         <div className="absolute bottom-[45%] md:bottom-[50%] right-[10%] md:right-[20%] w-16 md:w-20 h-[15%] md:h-[20%] flex flex-col items-center z-[15]">
-          <motion.div 
+          <motion.div
             className="relative w-full h-full flex items-end justify-center"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 2, ease: 'easeOut', delay: 0.3 }}
           >
             {/* Restored mix-blend-screen because the uploaded image is a JPG with a black background! This removes the visible square boundary. */}
-            <img 
-              src="/Cherryblossom.png" 
-              alt="Cherry blossom tree" 
-              className="w-full h-full object-contain mix-blend-screen drop-shadow-[0_0_15px_rgba(255,182,193,0.5)]" 
+            <img
+              src="/Cherryblossom.png"
+              alt="Cherry blossom tree"
+              className="w-full h-full object-contain mix-blend-screen drop-shadow-[0_0_15px_rgba(255,182,193,0.5)]"
               style={{
                 // Mask the bottom so it fades perfectly into the deep grass
                 maskImage: 'linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 20%)',
@@ -538,7 +532,7 @@ export function AnimatedBackground() {
 
         {/* --- The Main Left Tree (Placed above all grass with a higher z-index 50) --- */}
         <div className="absolute bottom-[10%] md:bottom-[15%] left-[-15%] md:left-[-5%] w-full max-w-lg h-[75%] md:h-[80%] flex flex-col items-center z-50">
-          <motion.div 
+          <motion.div
             className="relative w-full h-full flex items-end justify-center"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -556,7 +550,7 @@ export function AnimatedBackground() {
             className="absolute rounded-full bg-[#fff0f5] mix-blend-screen"
             style={{
               width: bug.size, height: bug.size, left: `${bug.left}%`, bottom: `${bug.bottom}%`,
-              zIndex: bug.zIndex, 
+              zIndex: bug.zIndex,
               boxShadow: '0 0 8px 2px rgba(255, 182, 193, 0.8), 0 0 15px 4px rgba(255, 20, 147, 0.6)',
             }}
             animate={{ y: [0, -40, 0], x: [0, bug.xOffset, 0], opacity: [0, 1, 0], scale: [1, 1.3, 1] }}
