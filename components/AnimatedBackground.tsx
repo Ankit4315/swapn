@@ -74,7 +74,8 @@ const ThreeGrassField: React.FC<ThreeGrassFieldProps> = ({ isForeground = false 
     };
 
     // 5. Instancing (Drawing thousands of blades in one single draw call)
-    const count = isForeground ? 10000 : 8000;
+    // Optimized: Reduced count by ~50% for buttery smooth performance with minimal visual impact!
+    const count = isForeground ? 4500 : 3500;
     const mesh = new THREE.InstancedMesh(geometry, material, count);
 
     const dummy = new THREE.Object3D();
@@ -397,9 +398,9 @@ export function AnimatedBackground() {
     return x - Math.floor(x);
   };
 
-  // Generate Stars
+  // Generate Stars (Optimized: reduced count from 80 to 40)
   const stars = useMemo(() => {
-    return Array.from({ length: 80 }).map((_, i) => {
+    return Array.from({ length: 40 }).map((_, i) => {
       return {
         id: i,
         x: Number((seededRandom(i * 5 + 1) * 100).toFixed(2)),
@@ -411,9 +412,9 @@ export function AnimatedBackground() {
     });
   }, []);
 
-  // Generate Fireflies
+  // Generate Fireflies (Optimized: reduced count from 120 to 40 to prevent DOM thrashing)
   const fireflies = useMemo(() => {
-    return Array.from({ length: 120 }).map((_, i) => {
+    return Array.from({ length: 40 }).map((_, i) => {
       const z = Math.pow(seededRandom(100 + i * 6 + 1), 1.2);
       const horizonBottom = (1 - z) * 30 - 5;
 
@@ -442,7 +443,7 @@ export function AnimatedBackground() {
       transition={{ duration, repeat: Infinity, ease: 'linear', delay }}
     >
       <img
-        src="/pinkcloud.png"
+        src="/pinkcloud.webp"
         alt="Floating pink cloud"
         // Gave them a standard width so scaling makes a huge visual difference
         className="w-32 md:w-56 object-contain mix-blend-screen"
@@ -477,7 +478,7 @@ export function AnimatedBackground() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 2, ease: 'easeOut' }}
       >
-        <img src="/pinkmoon1.png" alt="Pink moon" className="w-full h-full object-contain mix-blend-screen opacity-95 drop-shadow-[0_0_40px_rgba(255,105,180,0.4)]" />
+        <img src="/pinkmoon1.webp" alt="Pink moon" className="w-full h-full object-contain mix-blend-screen opacity-95 drop-shadow-[0_0_40px_rgba(255,105,180,0.4)]" />
       </motion.div>
 
       {/* Pink Clouds */}
@@ -514,7 +515,7 @@ export function AnimatedBackground() {
           >
             {/* Restored mix-blend-screen because the uploaded image is a JPG with a black background! This removes the visible square boundary. */}
             <img
-              src="/Cherryblossom.png"
+              src="/Cherryblossom.webp"
               alt="Cherry blossom tree"
               className="w-full h-full object-contain mix-blend-screen drop-shadow-[0_0_15px_rgba(255,182,193,0.5)]"
               style={{
@@ -538,7 +539,7 @@ export function AnimatedBackground() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 2, ease: 'easeOut' }}
           >
-            <img src="/pinktree.png" alt="Majestic pink tree" className="w-full h-full object-contain drop-shadow-[0_0_40px_rgba(255,105,180,0.6)]" />
+            <img src="/pinktree.webp" alt="Majestic pink tree" className="w-full h-full object-contain drop-shadow-[0_0_40px_rgba(255,105,180,0.6)]" />
           </motion.div>
           <div className="absolute bottom-6 w-[50%] h-12 bg-[#ff69b4] blur-2xl opacity-50 rounded-[100%] z-[-1]" />
         </div>

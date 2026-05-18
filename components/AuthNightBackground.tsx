@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 // --- AUTH NIGHT BACKGROUND COMPONENT ---
 
-export function AuthNightBackground({ starCount = 80 }) {
+export function AuthNightBackground({ starCount = 35 }) {
   const [isClient, setIsClient] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -78,7 +78,7 @@ export function AuthNightBackground({ starCount = 80 }) {
           <div className="absolute inset-0 bg-pink-500/40 rounded-full blur-[20px] md:blur-[35px]" />
           
           <img
-            src="/pinkmoon1.png"
+            src="/pinkmoon1.webp"
             alt="Glowing Pink Moon"
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
             className="relative w-full h-full object-contain mix-blend-screen"
@@ -104,7 +104,7 @@ export function AuthNightBackground({ starCount = 80 }) {
                 >
                   <div className="absolute inset-0 bg-pink-500/30 rounded-full blur-[30px]" />
                   <img
-                    src="/pinkcloud.png"
+                    src="/pinkcloud.webp"
                     alt="Fluffy Pink Cloud"
                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     className="relative w-full h-full object-contain mix-blend-screen"
@@ -134,7 +134,7 @@ export function AuthNightBackground({ starCount = 80 }) {
                 <div className="absolute inset-0 bg-pink-500/30 rounded-full blur-[30px]" />
                 
                 <img
-                  src="/pinkcloud.png"
+                  src="/pinkcloud.webp"
                   alt="Fluffy Pink Cloud"
                   onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   className="relative w-full h-full object-contain mix-blend-screen"
@@ -235,7 +235,7 @@ export function AuthNightBackground({ starCount = 80 }) {
 export default function App() {
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center font-sans">
-      <AuthNightBackground starCount={90} />
+      <AuthNightBackground starCount={40} />
     </div>
   );
 }
