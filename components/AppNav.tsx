@@ -2,19 +2,10 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
-// --- MOCKS FOR NEXT.JS & NEXT-AUTH ---
-// These simulate your Next.js environment so the component can render in this preview
-type MockSession = { data: { user?: { username: string } | null } };
-const useSession = (): MockSession => ({ data: { user: { username: 'StarGazer' } } });
-const useRouter = (): { push: (url: string) => void } => ({ push: (url: string) => console.log('Navigating to:', url) });
-const signOut = async (options?: { redirect?: boolean }): Promise<void> => { console.log('Signing out...'); };
-const Link: React.FC<{ href: string; className?: string; children?: React.ReactNode }> = ({ href, children, className }) => (
-  <a href={href} className={className}>{children}</a>
-);
-
-
-// --- ACTUAL APP NAV CODE ---
 export function AppNav() {
   const { data: session } = useSession();
   const router = useRouter();
