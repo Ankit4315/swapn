@@ -113,28 +113,28 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
-      <div className="bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20 rounded-xl p-8">
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_40px_120px_-60px_rgba(255,182,193,0.45)] rounded-[2rem] p-8">
         {!isEditing ? (
           <>
             <div className="space-y-6">
-              <div>
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
                 <h3 className="text-pink-200 font-semibold text-sm mb-2">EMAIL</h3>
                 <p className="text-white text-lg">{profile.email}</p>
               </div>
 
-              <div>
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
                 <h3 className="text-pink-200 font-semibold text-sm mb-2">USERNAME</h3>
                 <p className="text-white text-lg">{profile.username}</p>
               </div>
 
-              <div>
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
                 <h3 className="text-pink-200 font-semibold text-sm mb-2">BIO</h3>
                 <p className="text-pink-100 text-lg">
                   {profile.bio || 'No bio set yet'}
                 </p>
               </div>
 
-              <div>
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
                 <h3 className="text-pink-200 font-semibold text-sm mb-2">MEMBER SINCE</h3>
                 <p className="text-pink-100 text-lg">
                   {new Date(profile.createdAt).toLocaleDateString()}
@@ -154,30 +154,30 @@ export default function ProfilePage() {
         ) : (
           <>
             <div className="space-y-6">
-              <div>
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
                 <h3 className="text-pink-200 font-semibold text-sm mb-2">EMAIL</h3>
                 <p className="text-white text-lg">{profile.email}</p>
                 <p className="text-pink-300 text-sm mt-1">(Email cannot be changed)</p>
               </div>
 
-              <div>
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
                 <h3 className="text-pink-200 font-semibold text-sm mb-2">USERNAME</h3>
                 <input
                   type="text"
                   value={editData.username}
                   onChange={(e) => setEditData({ ...editData, username: e.target.value })}
-                  className="w-full px-4 py-2 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-pink-600 focus:outline-none focus:bg-opacity-20 focus:border-pink-400"
+                  className="w-full px-4 py-2 bg-white/10 border border-pink-300 border-opacity-40 rounded-3xl text-pink-50 focus:outline-none focus:bg-white/15 focus:border-pink-400"
                 />
               </div>
 
-              <div>
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
                 <h3 className="text-pink-200 font-semibold text-sm mb-2">BIO</h3>
                 <textarea
                   value={editData.bio}
                   onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
                   placeholder="Tell us about yourself..."
                   rows={5}
-                  className="w-full px-4 py-2 bg-white bg-opacity-10 border border-pink-300 border-opacity-40 rounded-lg text-pink-600 placeholder-pink-200 focus:outline-none focus:bg-opacity-20 focus:border-pink-400 resize-none"
+                  className="w-full px-4 py-2 bg-white/10 border border-pink-300 border-opacity-40 rounded-3xl text-pink-50 placeholder-pink-200 focus:outline-none focus:bg-white/15 focus:border-pink-400 resize-none"
                 />
                 <p className="text-pink-300 text-sm mt-1">
                   {editData.bio.length}/500 characters
